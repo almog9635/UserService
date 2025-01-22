@@ -21,11 +21,14 @@ export const queries = {
     `,
     getUser: gql`
         query getUser($id: ID!) {
-            users(id: $id) {
+            users(input: {id: $id}) {
                 ...user
                 group{
                     id
                     name
+                    commander{
+                        id
+                    }
                 }
                 roles{
                     id
@@ -37,7 +40,7 @@ export const queries = {
     `,
     loginQuery: gql`
         query loginQuery($id: ID!) {
-            users(id: $id) {
+            users(input: {id: $id}) {
                 id
                 firstName
                 password
@@ -51,7 +54,7 @@ export const queries = {
 
     getAllUsersByGroupId : gql`
         query getAllUsersByGroupId($id : ID!) {
-            getAllUsersByGroupId(id : $id){
+            users(input : {group{id : $id}}) {
                 id
             }
         }
@@ -81,7 +84,7 @@ export const queries = {
 
     getGroup : gql`
         query getGroup($id: ID!) {
-            groups(id: $id) {
+            groups(input: {id: $id}) {
                 id
                 name
                 commander {

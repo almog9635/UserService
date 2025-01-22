@@ -1,62 +1,47 @@
-import { corsHeaders, logger } from "../consts/consts.ts";
+import { logger } from "../consts/consts.ts";
 import { GraphQLFetcher } from "../graphql-fetcher.ts";
 
-export abstract class CRUD<T>{
+export abstract class CRUD<T, D>{
 
-    public async handleCreate(req: Request, input: T, mutation : string): Promise<Response>{
+    public async handleCreate(input: T, mutation : string): Promise<D>{
 
         logger.info("Creating " + typeof(input) +  " with input: ", input);
-        const data = await GraphQLFetcher.fetchGraphQL(mutation, { input: input });
+        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input });
         logger.info("Created : ", typeof(input) + " " + data);
         
-        return new Response(JSON.stringify(data), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 201,
-        });
+        return data;
     }
 
-    public async handleDelete(req: Request, id: number, mutation : string): Promise<Response>{
+    public async handleDelete(id: number, mutation: string): Promise<boolean>{
 
         logger.info("deleting ", id);
-        const data = await GraphQLFetcher.fetchGraphQL(mutation, {id : id});
+        const data = await GraphQLFetcher.fetchGraphQL<boolean>(mutation, {id : id});
 
-        return new Response(JSON.stringify(data), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 201,
-        });
+        return data;
     }
 
-    public async handleUpdate(req: Request, input: T, mutation : string): Promise<Response>{
+    public async handleUpdate(input: T, mutation : string): Promise<D>{
 
         logger.info("Updating " + typeof(input) +  " with input: ", input);
-        const data = await GraphQLFetcher.fetchGraphQL(mutation, { input: input });
+        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input });
         logger.info("Updated : ", typeof(input) + " " + data);
         
-        return new Response(JSON.stringify(data), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 201,
-        });
+        return data;
     }
 
-    public async handleGetAll(req: Request, query : string): Promise<Response>{
+    public async handleGetAll(query: string): Promise<D[]>{
 
-        const data = await GraphQLFetcher.fetchGraphQL(query);
+        const data = await GraphQLFetcher.fetchGraphQL<D[]>(query);
         logger.info("Fetched all: ", data);
 
-        return new Response(JSON.stringify(data), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-        });
+        return data;
     }
 
-    public async handleGetById(req : Request, id : number, query : string): Promise<Response>{
+    public async handleGetById(id : number, query : string): Promise<D>{
         
-        const data = await GraphQLFetcher.fetchGraphQL(query, {id : id});
+        const data = await GraphQLFetcher.fetchGraphQL<D>(query, {id : id});
         logger.info("Fetched: ", data);
 
-        return new Response(JSON.stringify(data,), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-        });
+        return data;
     }
 }

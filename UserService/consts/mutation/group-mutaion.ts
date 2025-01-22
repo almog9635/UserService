@@ -1,8 +1,8 @@
-import { gql } from "https://deno.land/x/graphql_request@v4.1.0/mod.ts";
+import { gql } from "npm:graphql-request";
 
 export const groupMutation = {
     addGroup : gql`
-    mutation AddGroup($input: GroupInput!) {
+    mutation AddGroup($input: GroupUpdate!) {
         addGroup(input: $input) {
             name
             commander
