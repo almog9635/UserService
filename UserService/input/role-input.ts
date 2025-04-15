@@ -1,3 +1,3 @@
 export interface RoleInput{
-    roleName: string;
+    id: string;
 }

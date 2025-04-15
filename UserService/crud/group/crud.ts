@@ -1,7 +1,7 @@
 import { logger } from "../../consts/consts.ts";
-import { groupMutation } from "../../consts/mutation/group-mutaion.ts";
+import { groupMutation } from "../../consts/mutation/group.ts";
 import { queries } from "../../consts/quries.ts";
-import { GroupInput } from "../../entity/group-input.ts";
+import { GroupInput } from "../../input/group-input.ts";
 import { Group } from "../../entity/group.ts";
 import { CRUD } from "../crud.ts";
 import { CrudUser } from "../user/crud.ts";
@@ -21,7 +21,7 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
                 throw new Error(`one of the fields is missing`);
             }
 
-            return new CrudGroup().handleCreate(groupInput, groupMutation.addGroup);
+            return new CrudGroup().handleCreate(groupInput, groupMutation.addGroup, req.headers);
         } catch (error) {
             logger.error("Error creating group", error);
             throw error;
@@ -41,7 +41,7 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
                 throw new Error(`one of the fields is missing`);
             }
 
-            return new CrudGroup().handleUpdate(groupInput, groupMutation.updateGroup);
+            return new CrudGroup().handleUpdate(groupInput, groupMutation.updateGroup, req.headers);
         } catch (error) {
             logger.error("Error updating group", error);
             throw error;
@@ -57,13 +57,13 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
                 throw new Error("group ID is required");
             }
             logger.info("deleting ", groupId);
-            const users = await CrudUser.getAllByGroupId(parseInt(groupId, 10));
+            const users = await CrudUser.getAllByGroupId(groupId);
             if (users) {
                 logger.error("Group can not be deleted");
                 throw new Error("Group can not be deleted");
             }
 
-            return new CrudGroup().handleDelete(parseInt(groupId, 10), groupMutation.deleteGroup);
+            return new CrudGroup().handleDelete(groupId, groupMutation.deleteGroup);
         } catch (error) {
             logger.error("Error deleting group", error);
             throw error;
@@ -89,7 +89,7 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
                 throw new Error("User ID is required");
             }
 
-            return new CrudGroup().handleGetById(parseInt(groupId, 10), queries.getGroup);
+            return new CrudGroup().handleGetById(groupId, queries.getGroup);
         } catch (error) {
             logger.error("Error fetching group by ID", error);
             throw error;

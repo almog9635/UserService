@@ -3,16 +3,19 @@ import { GraphQLFetcher } from "../graphql-fetcher.ts";
 
 export abstract class CRUD<T, D>{
 
-    public async handleCreate(input: T, mutation : string): Promise<D>{
+    public async handleCreate(input: T, mutation : string, headers : Headers): Promise<D>{
 
-        logger.info("Creating " + typeof(input) +  " with input: ", input);
-        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input });
-        logger.info("Created : ", typeof(input) + " " + data);
-        
+        const creatorId = headers.get("User-Id");
+        if(!creatorId){
+            throw new Error("User-Id is required in the headers");
+        }
+
+        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input }, creatorId);
+
         return data;
     }
 
-    public async handleDelete(id: number, mutation: string): Promise<boolean>{
+    public async handleDelete(id: string, mutation: string): Promise<boolean>{
 
         logger.info("deleting ", id);
         const data = await GraphQLFetcher.fetchGraphQL<boolean>(mutation, {id : id});
@@ -20,12 +23,15 @@ export abstract class CRUD<T, D>{
         return data;
     }
 
-    public async handleUpdate(input: T, mutation : string): Promise<D>{
+    public async handleUpdate(input: T, mutation : string, headers : Headers): Promise<D>{
 
-        logger.info("Updating " + typeof(input) +  " with input: ", input);
-        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input });
-        logger.info("Updated : ", typeof(input) + " " + data);
-        
+        const modifierId = headers.get("User-Id");
+        if(!modifierId){
+            throw new Error("User-Id is required in the headers");
+        }
+
+        const data = await GraphQLFetcher.fetchGraphQL<D>(mutation, { input: input }, modifierId);
+                
         return data;
     }
 
@@ -37,7 +43,7 @@ export abstract class CRUD<T, D>{
         return data;
     }
 
-    public async handleGetById(id : number, query : string): Promise<D>{
+    public async handleGetById(id : string, query : string): Promise<D>{
         
         const data = await GraphQLFetcher.fetchGraphQL<D>(query, {id : id});
         logger.info("Fetched: ", data);

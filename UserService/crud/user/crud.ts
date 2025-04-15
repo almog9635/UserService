@@ -1,11 +1,12 @@
 import { logger } from "../../consts/consts.ts";
-import { userMutations } from "../../consts/mutation/user-mutation.ts";
+import { userMutations } from "../../consts/mutation/user.ts";
 import { queries } from "../../consts/quries.ts";
-import { UserInput } from "../../entity/user-input.ts";
+import { UserInput } from "../../input/user-input.ts";
 import { User } from "../../entity/user.ts";
 import { GraphQLFetcher } from "../../graphql-fetcher.ts";
 import { CRUD } from "../crud.ts";
 import { Request as OakRequest } from "@oak/oak";
+import { Group } from "../../entity/group.ts";
 
 export class CrudUser extends CRUD<UserInput, User> {
     
@@ -18,16 +19,20 @@ export class CrudUser extends CRUD<UserInput, User> {
                 password: rawInput.password,
                 rank: rawInput.rank,
                 serviceType: rawInput.serviceType,
-                group: rawInput.group.name,
-                roles: rawInput.roles?.map(({ id, ...role }: any) => role),
+                group: rawInput.group,
+                roles: rawInput.roles,
             };
             for (const field of Object.keys(userInput)) {
                 if (!userInput[field]) {
                     throw Error(`${field} is required`);
                 }
             }
-        
-            return new CrudUser().handleCreate(userInput, userMutations.addUser);
+
+            if(!req.headers.has("User-Id")){
+                throw Error("User-Id is required in the headers");
+            }
+
+            return new CrudUser().handleCreate(userInput, userMutations.addUser, req.headers);
         } catch(error){
             logger.error("Error in creating user", error);
             throw error;
@@ -54,7 +59,7 @@ export class CrudUser extends CRUD<UserInput, User> {
             //     throw new Error("user is the commader of a group, cannot delete");
             // }
 
-            return new CrudUser().handleDelete(parseInt(userId, 10), userMutations.deleteUser);
+            return new CrudUser().handleDelete(userId, userMutations.deleteUser);
         } catch(error){
             logger.error("error deleting user ", error);
 
@@ -74,9 +79,9 @@ export class CrudUser extends CRUD<UserInput, User> {
                 rank: rawInput.rank,
                 serviceType: rawInput.serviceType,
                 group: {
-                    name: rawInput.group.name
+                    name: rawInput.group.id
                 },
-                roles: rawInput.roles?.map(({ id, ...role }: any) => role),
+                roles: rawInput.roles,
             };
             for (const field of Object.keys(userInput)) {
                 if (!userInput[field]) {
@@ -87,7 +92,7 @@ export class CrudUser extends CRUD<UserInput, User> {
                 }
             }
 
-            return new CrudUser().handleUpdate(userInput, userMutations.updateUser);
+            return new CrudUser().handleUpdate(userInput, userMutations.updateUser, req.headers);
         } catch(error){
             logger.error("error updating user ", error);
 
@@ -110,7 +115,7 @@ export class CrudUser extends CRUD<UserInput, User> {
                 throw new Error("User ID is required");
             }
 
-            return new CrudUser().handleGetById(parseInt(userId, 10), queries.getUser)
+            return new CrudUser().handleGetById(userId, queries.getUser)
         } catch(error){
             logger.error("user not found");
 
@@ -118,12 +123,12 @@ export class CrudUser extends CRUD<UserInput, User> {
         }
     }
 
-    public static async getById(id: number): Promise<User>{
+    public static async getById(id: string): Promise<User>{
 
         return new CrudUser().handleGetById(id, queries.getUser)
     }
 
-    public static async getAllByGroupId(id : number): Promise<User[]> {
+    public static async getAllByGroupId(id : string): Promise<User[]> {
         try{
             const data = await GraphQLFetcher.fetchGraphQL<User[]>(queries.getAllUsersByGroupId, {id : id});
             if(!data){
@@ -156,6 +161,36 @@ export class CrudUser extends CRUD<UserInput, User> {
            return data;
         } catch(error){
             logger.error("Error fetching user by ID", error);
+
+            throw error;
+        }
+    }
+
+    public static async handleUsersGroup(req : OakRequest): Promise<User[]> {
+        try{
+            const url = new URL(req.url);
+            const userId = url.pathname.split("/").pop();
+            if (!userId) {
+                logger.error("user ID is missing in the request")
+
+                throw new Error("user ID is required");
+            }
+            const response = await GraphQLFetcher.fetchGraphQL<{users: [{group: Group}]}>(queries.getUsersGroup, {id : userId});
+            if (!response || !response.users || !response.users[0] || !response.users[0].group) {
+                throw new Error("No group found for this user");
+            }
+            logger.info(response);
+            if(!response){
+                logger.error("no user found");
+
+                throw new Error("no user exists with this id");
+            } 
+
+            const users =  await this.getAllByGroupId(response.users[0].group.id);
+            logger.info(users);
+            return users;
+        } catch(error){
+            logger.error("Error fetching users by group ID", error);
 
             throw error;
         }

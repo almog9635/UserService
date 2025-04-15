@@ -1,5 +1,5 @@
 import { queries } from "../../consts/quries.ts";
-import { RoleInput } from "../../entity/role-input.ts";
+import { RoleInput } from "../../input/role-input.ts";
 import { Role } from "../../entity/role.ts";
 import { CRUD } from "../crud.ts";
 

@@ -1,5 +1,6 @@
+
 export interface Group {
-    id: number;
+    id: string;
     name: string;
-    commander: number;
+    commander: string;
 }

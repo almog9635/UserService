@@ -1,11 +1,10 @@
 import { gql } from "npm:graphql-request";
 
-const userFragment = gql`
+export const userFragment = gql`
         fragment user on User {
             id
             firstName
             lastName
-            password
             serviceType
             rank
         }`;
@@ -23,6 +22,7 @@ export const queries = {
         query getUser($id: ID!) {
             users(input: {id: $id}) {
                 ...user
+                password
                 group{
                     id
                     name
@@ -31,9 +31,11 @@ export const queries = {
                     }
                 }
                 roles{
+                    role{
                     id
-                    roleName
-                }
+                    name
+                    }
+                } 
             }
         }
         ${userFragment}
@@ -45,8 +47,10 @@ export const queries = {
                 firstName
                 password
                  roles{
+                    role{
                     id
-                    roleName
+                    name
+                    }
                 }
             }
         }
@@ -54,8 +58,23 @@ export const queries = {
 
     getAllUsersByGroupId : gql`
         query getAllUsersByGroupId($id : ID!) {
-            users(input : {group{id : $id}}) {
+            users(input : {group: {id : $id}}) {
                 id
+                firstName
+                lastName
+            }
+        }
+    `,
+    getUsersGroup : gql`
+        query getUsersGroup($id : ID!) {
+            users(input : {id : $id}) {
+                group{
+                    id
+                    commander{
+                        id
+                    }
+                    name
+                }
             }
         }
     `,
@@ -64,7 +83,7 @@ export const queries = {
         query {
             getAllRoles {
                 id
-                roleName
+                name
             }
     }`,
 

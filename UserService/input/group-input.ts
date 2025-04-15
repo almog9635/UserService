@@ -1,5 +1,5 @@
 export interface GroupInput {
     name: string;
-    commander?: number;
+    commander?: string;
     [key: string]: any;
 }
