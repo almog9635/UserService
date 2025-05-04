@@ -6,6 +6,7 @@ import { Group } from "../../entity/group.ts";
 import { CRUD } from "../crud.ts";
 import { CrudUser } from "../user/crud.ts";
 import { Request as OakRequest } from "@oak/oak";
+import { User } from "../../entity/user.ts";
 
 export class CrudGroup extends CRUD<GroupInput, Group> {
     
@@ -31,15 +32,21 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
     public static async handleUpdate(req: OakRequest): Promise<Group> {
         try {
             const rawInput = await req.body.json();
+            logger.info("rawInput", rawInput);
+            const url = new URL(req.url);
+            const groupId = url.pathname.split("/").pop();
             const groupInput: GroupInput = {
-                id: rawInput.id,
+                id: groupId,
                 name: rawInput.name,
                 commander: rawInput.commander,
             };
+            logger.info("groupInput", groupInput);
 
             if (!await this.checkfields(groupInput)) {
                 throw new Error(`one of the fields is missing`);
             }
+
+            logger.info("headers ", req.headers);
 
             return new CrudGroup().handleUpdate(groupInput, groupMutation.updateGroup, req.headers);
         } catch (error) {
@@ -56,9 +63,10 @@ export class CrudGroup extends CRUD<GroupInput, Group> {
                 logger.error("group ID is missing in the OakRequest");
                 throw new Error("group ID is required");
             }
-            logger.info("deleting ", groupId);
-            const users = await CrudUser.getAllByGroupId(groupId);
-            if (users) {
+
+            const users : Array<User> = await CrudUser.getAllByGroupId(groupId);
+
+            if (users.length > 0) {
                 logger.error("Group can not be deleted");
                 throw new Error("Group can not be deleted");
             }

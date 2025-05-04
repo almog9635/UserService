@@ -3,7 +3,6 @@ import { logger, endpoint } from "./consts/consts.ts";
 
 export class GraphQLFetcher {
 
-    /* todo: add userid header */
     public static async fetchGraphQL<T>(query: string, variables: Record<string, unknown> = {}, modifierId? : string): Promise<T> {
         try {
             const headers: Record<string, string> = {

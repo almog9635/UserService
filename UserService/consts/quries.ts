@@ -30,6 +30,13 @@ export const queries = {
                         id
                     }
                 }
+                tasks {
+                      completed
+                      content
+                      deadline
+                      id
+                      startDate
+                }
                 roles{
                     role{
                     id
@@ -40,6 +47,38 @@ export const queries = {
         }
         ${userFragment}
     `,
+    editUser: gql`
+        query editUser($id: ID!) {
+            users(input: {id: $id}) {
+                id
+                firstName
+                lastName
+                password
+                rank
+                serviceType
+                group{
+                    id
+                    name
+                    commander{
+                        id
+                    }
+                }
+                roles{
+                    role{
+                    id
+                    name
+                    }
+                } 
+            }
+                getAllGroups {
+                    id
+                    name
+                }
+                getAllRoles {
+                    id
+                    name
+            }
+        }`,
     loginQuery: gql`
         query loginQuery($id: ID!) {
             users(input: {id: $id}) {
@@ -61,7 +100,7 @@ export const queries = {
             users(input : {group: {id : $id}}) {
                 id
                 firstName
-                lastName
+                lastName    
             }
         }
     `,
@@ -111,6 +150,19 @@ export const queries = {
                 }
                 users {
                     ...user
+                    roles {
+                       role {
+                         id
+                         name
+                       }
+                     }
+                    tasks {
+                      completed
+                      content
+                      deadline
+                      id
+                      startDate
+                    }
                 }
             }
         }

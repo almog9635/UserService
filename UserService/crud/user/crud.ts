@@ -70,27 +70,28 @@ export class CrudUser extends CRUD<UserInput, User> {
 
     public static async handleUpdate(req: OakRequest): Promise<User> {
         try{
-            const rawInput = await req.body.json();
-            const userInput: UserInput = {
-                id: rawInput.id,
-                firstName: rawInput.firstName,
-                lastName: rawInput.lastName,
-                password: rawInput.password,
-                rank: rawInput.rank,
-                serviceType: rawInput.serviceType,
-                group: {
-                    name: rawInput.group.id
-                },
-                roles: rawInput.roles,
-            };
-            for (const field of Object.keys(userInput)) {
-                if (!userInput[field]) {
-                    const error = new Error(`${field} is missing in the request`);
-                    logger.error(error.message);
+            const url = new URL(req.url);
+            const userId = url.pathname.split("/").pop();
+            if (!userId) {
+                const error = new Error("User ID is missing in the request");
+                logger.error(error.message);
 
-                    throw error;
-                }
+                throw error;
             }
+            const rawInput = await req.body.json();
+            logger.info("raw input ", rawInput);
+            const userInput: UserInput = {
+                id: userId,
+                firstName: rawInput?.firstName,
+                lastName: rawInput?.lastName,
+                password: rawInput?.password,
+                rank: rawInput?.rank,
+                serviceType: rawInput?.serviceType,
+                group: rawInput?.group,
+                roles: rawInput?.roles,
+            };
+
+            logger.info("user input ", userInput);
 
             return new CrudUser().handleUpdate(userInput, userMutations.updateUser, req.headers);
         } catch(error){
@@ -191,6 +192,24 @@ export class CrudUser extends CRUD<UserInput, User> {
             return users;
         } catch(error){
             logger.error("Error fetching users by group ID", error);
+
+            throw error;
+        }
+    }
+
+    public static async handleEditUser(req : OakRequest): Promise<User> {
+        try{
+            const url = new URL(req.url);
+            const userId = url.pathname.split("/").pop();
+            if (!userId) {
+                logger.error("User ID is missing in the request")
+
+                throw new Error("User ID is required");
+            }
+
+            return await GraphQLFetcher.fetchGraphQL<User>(queries.editUser, {id : userId});
+        } catch(error){
+            logger.error("error updating user ", error);
 
             throw error;
         }

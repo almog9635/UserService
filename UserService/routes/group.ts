@@ -13,11 +13,11 @@ groupRouter
     logger.info("Creating group");
     ctx.response.body = await CrudGroup.handleCreate(ctx.request);
   })
-  .delete("/group/delete/:id", async (ctx: Context) => {
+  .delete("/group/:id", async (ctx: Context) => {
     logger.info("Deleting group");
     ctx.response.body = await CrudGroup.handleDelete(ctx.request);
   })
-  .put("/group/update/:id", async (ctx: Context) => {
+  .put("/group/:id", async (ctx: Context) => {
     logger.info("Updating group");
     ctx.response.body = await CrudGroup.handleUpdate(ctx.request);
   })

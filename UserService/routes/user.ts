@@ -29,13 +29,24 @@ userRouter
     logger.info("Updating user");
     ctx.response.body = await CrudUser.handleUpdate(ctx.request)
   })
-  .get("/user/group/:id", async (ctx) => {
+  .get("/user/group/:id", async (ctx: Context) => {
     try{
-      const { id } = ctx.params;
-      logger.info(`Fetching all users by group id: ${id}`);
+      logger.info(`Fetching all users by group`);
       ctx.response.body = await CrudUser.handleUsersGroup(ctx.request);
+      ctx.response.status = 200;
     } catch(error) {
       logger.error("Error fetching users by group ID", error);
+      ctx.response.status = 500;
+      ctx.response.body = { error: "Internal Server Error" };
+    }
+  })
+  .get("/user/edit/:id", async (ctx: Context) => {
+    try{
+      logger.info(`fetching user to edit`);
+      ctx.response.body = await CrudUser.handleEditUser(ctx.request);
+      ctx.response.status = 200;
+    } catch(error) {
+      logger.error("Error fetching user by ID", error);
       ctx.response.status = 500;
       ctx.response.body = { error: "Internal Server Error" };
     }

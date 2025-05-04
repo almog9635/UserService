@@ -19,8 +19,8 @@ export const userMutations = {
         }
     }`,
     updateUser: gql`
-    mutation UpdateUser($id: ID!, $input: UserUpdate!) {
-        updateUser(id: $id, input: $input) {
+    mutation UpdateUser($input: UserUpdate!) {
+        updateUser(input: $input) {
             id
             firstName
             lastName

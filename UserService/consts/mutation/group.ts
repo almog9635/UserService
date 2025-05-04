@@ -31,15 +31,6 @@ export const groupMutation = {
 
     deleteGroup : gql`
     mutation deleteGroup($id: ID!) {
-        deleteGroup(id: $id) {
-            id
-            name
-            commander
-            {
-                ...user
-            }
-        }
-    }
-        ${userFragment}
-    `,
+        deleteGroup(id: $id) 
+    }`,
 }
