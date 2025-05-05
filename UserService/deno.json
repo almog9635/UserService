@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@oak/oak": "jsr:@oak/oak@^17.1.4",
+    "@std/assert": "jsr:@std/assert@1",
+    "@tajpouria/cors": "jsr:@tajpouria/cors@^1.2.1",
+    "graphql-request": "npm:graphql-request@^7.1.2",
+    "jose": "npm:jose@5.9.6"
+  }
+}
