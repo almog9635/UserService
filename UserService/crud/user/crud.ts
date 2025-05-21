@@ -44,6 +44,7 @@ export class CrudUser extends CRUD<UserInput, User> {
         try{
             const url = new URL(req.url);
             const userId = url.pathname.split("/").pop();
+
             if (!userId) {
                 const error = new Error("User ID is missing in the request");
                 logger.error(error.message);
@@ -51,13 +52,13 @@ export class CrudUser extends CRUD<UserInput, User> {
                 throw error;
             }
 
-            // const commander = await this.getById(parseInt(userId, 10));
-            // logger.info("commander ", commander);
-            // if(commander.group?.commander === parseInt(userId, 10)){
-            //     logger.error("user is the commader of a group, cannot delete");
+            const commander = await this.getById(userId);
+            logger.info("commander ", commander);
+            if(commander.group?.commander === userId){
+                logger.error("user is the commader of a group, cannot delete");
 
-            //     throw new Error("user is the commader of a group, cannot delete");
-            // }
+                throw new Error("user is the commader of a group, cannot delete");
+            }
 
             return new CrudUser().handleDelete(userId, userMutations.deleteUser);
         } catch(error){
@@ -72,6 +73,7 @@ export class CrudUser extends CRUD<UserInput, User> {
         try{
             const url = new URL(req.url);
             const userId = url.pathname.split("/").pop();
+
             if (!userId) {
                 const error = new Error("User ID is missing in the request");
                 logger.error(error.message);
@@ -79,7 +81,6 @@ export class CrudUser extends CRUD<UserInput, User> {
                 throw error;
             }
             const rawInput = await req.body.json();
-            logger.info("raw input ", rawInput);
             const userInput: UserInput = {
                 id: userId,
                 firstName: rawInput?.firstName,
@@ -137,7 +138,6 @@ export class CrudUser extends CRUD<UserInput, User> {
 
                 throw new Error("no users exists in this group");
             } 
-            logger.info("users found ", data);
 
            return data;
         }catch(error){
@@ -152,12 +152,12 @@ export class CrudUser extends CRUD<UserInput, User> {
             const rawInput = await req.body.json();
             const { userId } = rawInput;
             const data = await GraphQLFetcher.fetchGraphQL<User>(queries.loginQuery, {id : userId});
+
             if(!data){
                 logger.error("no user found");
 
                 throw new Error("no user exists with this id");
             } 
-            logger.info("user found ", data);
 
            return data;
         } catch(error){
@@ -171,16 +171,19 @@ export class CrudUser extends CRUD<UserInput, User> {
         try{
             const url = new URL(req.url);
             const userId = url.pathname.split("/").pop();
+
             if (!userId) {
                 logger.error("user ID is missing in the request")
 
                 throw new Error("user ID is required");
             }
+
             const response = await GraphQLFetcher.fetchGraphQL<{users: [{group: Group}]}>(queries.getUsersGroup, {id : userId});
+
             if (!response || !response.users || !response.users[0] || !response.users[0].group) {
                 throw new Error("No group found for this user");
             }
-            logger.info(response);
+
             if(!response){
                 logger.error("no user found");
 
@@ -188,7 +191,7 @@ export class CrudUser extends CRUD<UserInput, User> {
             } 
 
             const users =  await this.getAllByGroupId(response.users[0].group.id);
-            logger.info(users);
+
             return users;
         } catch(error){
             logger.error("Error fetching users by group ID", error);
@@ -201,6 +204,7 @@ export class CrudUser extends CRUD<UserInput, User> {
         try{
             const url = new URL(req.url);
             const userId = url.pathname.split("/").pop();
+
             if (!userId) {
                 logger.error("User ID is missing in the request")
 
@@ -210,6 +214,25 @@ export class CrudUser extends CRUD<UserInput, User> {
             return await GraphQLFetcher.fetchGraphQL<User>(queries.editUser, {id : userId});
         } catch(error){
             logger.error("error updating user ", error);
+
+            throw error;
+        }
+    }
+
+    public static async handleGetAllUsersAndGroups(): Promise<{users: User[], groups: Group[]}> {
+        try{
+            const data = await GraphQLFetcher.fetchGraphQL<{users: User[], groups: Group[]}>
+            (queries.getAllUsersAndGroups);
+
+            if(!data){
+                logger.error("no users found");
+
+                throw new Error("no users exists in this group");
+            } 
+
+           return data;
+        }catch(error){
+            logger.error("Error fetching users by group ID", error);
 
             throw error;
         }

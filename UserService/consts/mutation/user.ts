@@ -1,4 +1,4 @@
-import { gql } from "https://deno.land/x/graphql_request@v4.1.0/mod.ts";
+import { gql } from "npm:graphql-request";
 
 export const userMutations = {
     addUser: gql`

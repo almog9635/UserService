@@ -50,6 +50,17 @@ userRouter
       ctx.response.status = 500;
       ctx.response.body = { error: "Internal Server Error" };
     }
+  })
+  .get("/users/groups" , async (ctx: Context) => {
+    try{
+      logger.info(`fetching users and groups`);
+      ctx.response.body = await CrudUser.handleGetAllUsersAndGroups();
+      ctx.response.status = 200;
+    } catch(error) {
+      logger.error("Error fetching user group", error);
+      ctx.response.status = 500;
+      ctx.response.body = { error: "Internal Server Error" };
+    }
   });
 
 export default userRouter;

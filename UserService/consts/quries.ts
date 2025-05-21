@@ -168,4 +168,28 @@ export const queries = {
         }
         ${userFragment}
     `,
+    getAllUsersAndGroups: gql`
+        query getAllUsersAndGroups {
+            getAllGroups {
+            id
+            name
+            commander {
+              roles{
+                role{
+                  name
+                }
+              }
+            ...user
+            }
+          }
+          getAllUsers {
+            roles{
+              role{
+                name
+              }
+            }
+            ...user
+          }
+        }
+        ${userFragment}`,
 };
